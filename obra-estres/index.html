@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Niveles de Estrés — Instalación Media Arts</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Canvas de fondo para el video/color generativo -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Overlay de partículas -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Contenedor Three.js -->
+  <div id="scene-container"></div>
+
+  <!-- UI de nivel (para pruebas) -->
+  <div id="nivel-selector">
+    <p class="selector-label">NIVEL DE ESTRÉS</p>
+    <div class="niveles">
+      <button class="nivel-btn" data-nivel="1">1</button>
+      <button class="nivel-btn" data-nivel="2">2</button>
+      <button class="nivel-btn" data-nivel="3">3</button>
+      <button class="nivel-btn" data-nivel="4">4</button>
+      <button class="nivel-btn" data-nivel="5">5</button>
+    </div>
+    <p class="selector-hint">← También puedes usar ?nivel=3 en la URL</p>
+  </div>
+
+  <!-- Panel de información del nivel -->
+  <div id="info-panel">
+    <div id="nivel-nombre"></div>
+    <div id="nivel-desc"></div>
+    <div id="nivel-estado"></div>
+  </div>
+
+  <!-- Botón de audio -->
+  <button id="audio-toggle" title="Activar/desactivar sonido">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+      <path id="audio-wave" d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+    </svg>
+  </button>
+
+  <!-- Generador de QR -->
+  <button id="qr-toggle">QR</button>
+  <div id="qr-modal">
+    <div id="qr-content">
+      <h2>Códigos QR para la instalación</h2>
+      <p>Escanea cada QR para activar el nivel correspondiente</p>
+      <div id="qr-grid"></div>
+      <button id="qr-close">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/audioEngine.js"></script>
+  <script src="js/bgCanvas.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/scene3d.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
