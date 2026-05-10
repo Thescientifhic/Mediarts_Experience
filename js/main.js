@@ -8,6 +8,7 @@ const App = (() => {
     BgCanvas.init();
     Particles.init();
     Scene3D.init();
+    Character.init();
     UI.init();
 
     // Leer ?nivel= de la URL
@@ -32,6 +33,7 @@ const App = (() => {
     BgCanvas.setNivel(n);
     Particles.setNivel(n);
     Scene3D.setNivel(n);
+    Character.setNivel(n);
     UI.setNivel(n);
 
     // Audio: iniciar en primer interacción del usuario

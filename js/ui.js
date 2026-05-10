@@ -21,19 +21,6 @@ const UI = (() => {
       audioBtn.classList.toggle('muted', !muted);
     });
 
-    // Botón y modal de QR
-    const qrToggle = document.getElementById('qr-toggle');
-    const qrModal  = document.getElementById('qr-modal');
-    const qrClose  = document.getElementById('qr-close');
-
-    qrToggle.addEventListener('click', () => {
-      buildQRGrid();
-      qrModal.classList.add('visible');
-    });
-    qrClose.addEventListener('click', () => qrModal.classList.remove('visible'));
-    qrModal.addEventListener('click', e => {
-      if (e.target === qrModal) qrModal.classList.remove('visible');
-    });
 
     // Flash de transición
     const flash = document.createElement('div');

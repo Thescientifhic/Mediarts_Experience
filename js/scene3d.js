@@ -54,7 +54,7 @@ const Scene3D = (() => {
       shininess:    80,
       specular:     0x88ccff,
       transparent:  true,
-      opacity:      0.88,
+      opacity:      0.2,
       side:         THREE.DoubleSide,
     });
 
@@ -139,9 +139,9 @@ const Scene3D = (() => {
     currentColor.lerp(targetColor, 0.025);
     mesh.material.color.copy(currentColor);
     mesh.material.emissive.setRGB(
-      currentColor.r * 0.12,
-      currentColor.g * 0.12,
-      currentColor.b * 0.12
+      currentColor.r * 0.02,
+      currentColor.g * 0.02,
+      currentColor.b * 0.02
     );
 
     // wireframe opacity según nivel

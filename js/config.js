@@ -3,7 +3,7 @@
 
 const NIVELES = {
   1: {
-    nombre:    "Calma",
+    nombre:    "Zenito",
     desc:      "Presencia plena · Flujo natural · Ecuanimidad interior",
     estado:    "sistema nervioso en reposo",
     // Paleta visual
