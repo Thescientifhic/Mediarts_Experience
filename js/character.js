@@ -1,6 +1,6 @@
 // character.js — Reproduce el video del personaje solo si el archivo existe.
 // Sin video → el personaje simplemente no aparece. Sin placeholders.
-// Chromakey por software: elimina el fondo negro en tiempo real via canvas 2D.
+// Chromakey por software: elimina el fondo negro Y verde en tiempo real via canvas 2D.
 
 let canvasEl, ctxCanvas;
 
@@ -32,17 +32,16 @@ const Character = (() => {
     ],
   };
 
-  // ── COLOR DE FONDO A ELIMINAR ────────────────────────────────────────────
-  // Cambia estos valores según el fondo de tu video:
-  //   Negro:        bgR=0,   bgG=0,   bgB=0
-  //   Verde croma:  bgR=0,   bgG=255, bgB=0
-  //   Azul croma:   bgR=0,   bgG=0,   bgB=255
-  const BG_R       = 0;
-  const BG_G       = 0;
-  const BG_B       = 0;
-  const TOLERANCE  = 80;   // 0–255: qué tan parecido al color de fondo se elimina
-                            // Sube a 60–80 si quedan bordes negros residuales
-                            // Baja a 20–25 si se come partes del personaje
+  // ── COLORES DE FONDO A ELIMINAR ──────────────────────────────────────────
+  // Agrega aquí todos los colores que quieras eliminar.
+  // Cada entrada: { r, g, b, tolerance }
+  //   tolerance 0–255: qué tan parecido al color se elimina.
+  //   Sube la tolerancia si quedan bordes residuales.
+  //   Bájala si se come partes del personaje.
+  const BG_COLORS = [
+    { r: 0,   g: 0,   b: 0,   tolerance: 80  },  // Negro
+    { r: 0,   g: 255, b: 0,   tolerance: 100 },  // Verde croma #0B9226
+  ];
   // ─────────────────────────────────────────────────────────────────────────
 
   // ── Init ──────────────────────────────────────────────────────────────────
@@ -130,7 +129,7 @@ const Character = (() => {
     videoEl.play().catch(() => hideCharacter());
   }
 
-  // ── Loop de dibujo con chromakey ──────────────────────────────────────────
+  // ── Loop de dibujo con chromakey multi-color ──────────────────────────────
   function drawFrame(w, h) {
     if (!videoEl || videoEl.paused || videoEl.ended) {
       animFrameId = requestAnimationFrame(() => drawFrame(w, h));
@@ -147,19 +146,22 @@ const Character = (() => {
       const g = data[i + 1];
       const b = data[i + 2];
 
-      // Distancia euclidiana al color de fondo
-      const dist = Math.sqrt(
-        (r - BG_R) ** 2 +
-        (g - BG_G) ** 2 +
-        (b - BG_B) ** 2
-      );
+      // Recorrer todos los colores de fondo definidos
+      for (const bg of BG_COLORS) {
+        const dist = Math.sqrt(
+          (r - bg.r) ** 2 +
+          (g - bg.g) ** 2 +
+          (b - bg.b) ** 2
+        );
 
-      if (dist < TOLERANCE) {
-        // Borde suave: zona interior → opacidad 0, zona de borde → fade gradual
-        const half = TOLERANCE * 0.5;
-        data[i + 3] = dist < half
-          ? 0
-          : Math.round(((dist - half) / half) * 255);
+        if (dist < bg.tolerance) {
+          // Borde suave: zona interior → opacidad 0, zona de borde → fade gradual
+          const half = bg.tolerance * 0.5;
+          data[i + 3] = dist < half
+            ? 0
+            : Math.round(((dist - half) / half) * 255);
+          break; // Ya procesamos este pixel, pasar al siguiente
+        }
       }
     }
 

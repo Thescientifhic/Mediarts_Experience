@@ -1,116 +1,135 @@
-// audioEngine.js — Motor de sonido generativo con Tone.js
+// audioEngine.js — Reproduce una pista MP3 específica por nivel.
+// Cada nivel tiene su propia canción en assets/audio/nivelN.mp3
+// Fade in al entrar, fade out al salir. Mute global sin interrumpir la pista.
 
 const AudioEngine = (() => {
-  let started  = false;
-  let muted    = false;
-  let currentN = null;
-  let loopId   = null;
+  let muted      = false;
+  let currentN   = null;
+  let audioEl    = null;
+  let fadeOut    = null;  // ID del intervalo de fade out en curso
 
-  // Nodos persistentes (se crean una sola vez)
-  let reverb, compressor, masterVol;
-  let synths  = [];
-  let drones  = [];
+  // ── PISTAS POR NIVEL ──────────────────────────────────────────────────────
+  // Cambia las rutas a donde tengas tus MP3.
+  const TRACKS = {
+    1: 'assets/audio/nivel1.mp3',
+    2: 'assets/audio/nivel2.mp3',
+    3: 'assets/audio/nivel3.mp3',
+    4: 'assets/audio/nivel4.mp3',
+    5: 'assets/audio/nivel5.mp3',
+  };
 
-  function init() {
-    masterVol  = new Tone.Volume(-6).toDestination();
-    compressor = new Tone.Compressor(-24, 6).connect(masterVol);
-    reverb     = new Tone.Reverb({ decay: 6, wet: 0.7 }).connect(compressor);
-    reverb.generate();
-  }
+  // ── AJUSTES ───────────────────────────────────────────────────────────────
+  const FADE_OUT_MS  = 400;   // Duración del fade out al cambiar de nivel (ms)
+  const FADE_IN_MS   = 1000;  // Duración del fade in al entrar (ms)
+  const MAX_VOLUME   = 0.85;  // Volumen máximo (0.0 – 1.0)
+  const FADE_STEPS   = 30;    // Pasos de interpolación del fade
+  // ─────────────────────────────────────────────────────────────────────────
 
-  function disposeAll() {
-    synths.forEach(s => { try { s.dispose(); } catch(_){} });
-    drones.forEach(d => { try { d.dispose(); } catch(_){} });
-    if (loopId) clearInterval(loopId);
-    synths = [];
-    drones = [];
-    loopId = null;
-  }
-
+  // ── Arrancar el AudioContext con gesto del usuario ────────────────────────
   async function start() {
-    if (started) return;
-    await Tone.start();
-    init();
-    started = true;
+    // Con <audio> nativo no necesitamos Tone.js ni AudioContext manual.
+    // Esta función se mantiene para compatibilidad con main.js existente.
   }
 
+  // ── Cambiar nivel ─────────────────────────────────────────────────────────
   function setNivel(n) {
-    if (!started) return;
-    const cfg = window.NIVELES[n];
-    if (!cfg) return;
+    if (n === currentN) return;
     currentN = n;
 
-    disposeAll();
+    const src = TRACKS[n];
+    if (!src) return;
 
-    reverb.wet.rampTo(cfg.audio_reverb, 1.5);
-    masterVol.volume.rampTo(muted ? -Infinity : cfg.audio_volume, 1.0);
-
-    // ── Drones (notas largas sostenidas) ──────────────────────────
-    cfg.audio_base_hz.forEach((hz, i) => {
-      const drone = new Tone.Synth({
-        oscillator: { type: cfg.audio_synth },
-        envelope:   { attack: 3.0, decay: 0.5, sustain: 0.7, release: 4.0 },
-        volume:     -24 - i * 3,
-      }).connect(reverb);
-
-      drone.triggerAttack(hz);
-
-      // vibrato sutil que crece con el nivel
-      if (n >= 3) {
-        const lfo = new Tone.LFO({
-          frequency: 0.08 + n * 0.06,
-          min:       hz * 0.99,
-          max:       hz * 1.01,
-        }).start();
-        lfo.connect(drone.frequency);
-      }
-      drones.push(drone);
-    });
-
-    // ── Pulsos rítmicos (aumentan con nivel) ─────────────────────
-    if (n >= 2) {
-      const pulseSynth = new Tone.MembraneSynth({
-        pitchDecay: 0.08,
-        octaves:    4,
-        volume:     -30 + n * 3,
-      }).connect(reverb);
-
-      synths.push(pulseSynth);
-
-      loopId = setInterval(() => {
-        if (muted) return;
-        // probabilidad de disparo aumenta con el nivel
-        if (Math.random() < 0.35 + n * 0.12) {
-          const notes = cfg.audio_base_hz;
-          const hz = notes[Math.floor(Math.random() * notes.length)];
-          pulseSynth.triggerAttackRelease(hz, "8n");
-        }
-      }, cfg.audio_interval);
-    }
-
-    // ── Ruido de textura (nivel 4–5) ─────────────────────────────
-    if (n >= 4) {
-      const noise = new Tone.Noise({ type: "brown", volume: -40 + n * 4 })
-        .connect(reverb);
-      const filter = new Tone.AutoFilter({
-        frequency: 0.5 + n * 0.4,
-        baseFrequency: 300,
-        octaves: 2.5,
-      }).connect(reverb).start();
-      noise.connect(filter);
-      noise.start();
-      synths.push(noise, filter);
+    if (audioEl && !audioEl.paused) {
+      // Hay algo sonando: fade out → luego cargar nueva pista
+      fadeOutAndThen(() => loadTrack(src));
+    } else {
+      // Sin audio previo: cargar directamente
+      loadTrack(src);
     }
   }
 
+  // ── Cargar y reproducir una pista ─────────────────────────────────────────
+  function loadTrack(src) {
+    // Detener y limpiar pista anterior
+    if (audioEl) {
+      audioEl.pause();
+      audioEl.src = '';
+      audioEl.remove();
+    }
+    if (fadeOut) { clearInterval(fadeOut); fadeOut = null; }
+
+    audioEl         = new Audio(src);
+    audioEl.loop    = true;
+    audioEl.volume  = 0;                     // Empieza en 0 para hacer fade in
+    audioEl.preload = 'auto';
+
+    if (muted) {
+      // Si está muteado: cargamos pero no reproducimos
+      audioEl.volume = 0;
+      audioEl.play().catch(() => {});
+      audioEl.pause();
+      return;
+    }
+
+    audioEl.play().then(() => {
+      fadeIn();
+    }).catch(() => {
+      // Autoplay bloqueado por el navegador: se reproducirá en el próximo
+      // setNivel() o cuando el usuario interactúe con el botón de sonido.
+    });
+  }
+
+  // ── Fade in ───────────────────────────────────────────────────────────────
+  function fadeIn() {
+    if (!audioEl) return;
+    const step     = MAX_VOLUME / FADE_STEPS;
+    const interval = FADE_IN_MS / FADE_STEPS;
+
+    const id = setInterval(() => {
+      if (!audioEl) { clearInterval(id); return; }
+      const next = Math.min(audioEl.volume + step, MAX_VOLUME);
+      audioEl.volume = next;
+      if (next >= MAX_VOLUME) clearInterval(id);
+    }, interval);
+  }
+
+  // ── Fade out y callback ───────────────────────────────────────────────────
+  function fadeOutAndThen(callback) {
+    if (!audioEl) { callback(); return; }
+    if (fadeOut) clearInterval(fadeOut);
+
+    const startVol = audioEl.volume;
+    const step     = startVol / FADE_STEPS;
+    const interval = FADE_OUT_MS / FADE_STEPS;
+
+    fadeOut = setInterval(() => {
+      if (!audioEl) { clearInterval(fadeOut); fadeOut = null; callback(); return; }
+      const next = Math.max(audioEl.volume - step, 0);
+      audioEl.volume = next;
+      if (next <= 0) {
+        clearInterval(fadeOut);
+        fadeOut = null;
+        audioEl.pause();
+        callback();
+      }
+    }, interval);
+  }
+
+  // ── Mute / Unmute ─────────────────────────────────────────────────────────
   function setMute(m) {
     muted = m;
-    if (!started) return;
+    if (!audioEl) return;
+
     if (m) {
-      Tone.getDestination().volume.rampTo(-Infinity, 0.3);
+      // Fade out suave (sin callback: la pista sigue cargada, solo silenciada)
+      fadeOutAndThen(() => {});
     } else {
-      const cfg = window.NIVELES[currentN];
-      Tone.getDestination().volume.rampTo(cfg ? cfg.audio_volume : -12, 0.3);
+      // Retomar reproducción con fade in
+      if (audioEl.paused) {
+        audioEl.play().then(() => fadeIn()).catch(() => {});
+      } else {
+        fadeIn();
+      }
     }
   }
 
