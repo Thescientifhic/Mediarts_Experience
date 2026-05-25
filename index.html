@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Niveles de Estrés — Instalación Media Arts</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/survey.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       CAPAS DE EXPERIENCIA (visibles solo en pantalla resultado)
+  ════════════════════════════════════════════════════════════ -->
+  <canvas id="bg-canvas"       style="opacity:0;transition:opacity 1.2s ease;"></canvas>
+  <canvas id="particle-canvas" style="opacity:0;transition:opacity 1.2s ease;"></canvas>
+  <div    id="scene-container" style="opacity:0;transition:opacity 1.2s ease;"></div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       PANTALLA 1 — BIENVENIDA
+  ════════════════════════════════════════════════════════════ -->
+  <div id="screen-welcome" class="screen">
+    <div class="welcome-inner">
+
+      <div class="welcome-logo">
+        <!-- Pon tu archivo logo.png en la carpeta assets/ -->
+        <img src="assets/logo.png" alt="Logo del proyecto"
+             onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'"/>
+        <div id="logo-fallback" class="logo-fallback" style="display:none">
+          OBRA<br><span>INTERACTIVA</span>
+        </div>
+      </div>
+
+      <p class="welcome-desc">
+        Una exploración sensorial de los estados emocionales que habitamos.<br>
+        Responde con honestidad. No hay respuestas correctas.
+      </p>
+
+      <button id="btn-start" class="btn-primary">
+        <span>Iniciar experiencia</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+      <p class="welcome-hint">Toca para comenzar · Responde las preguntas · Descubre tu nivel</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       PANTALLA 2 — ENCUESTA
+  ════════════════════════════════════════════════════════════ -->
+  <div id="screen-survey" class="screen">
+    <div class="survey-inner">
+
+      <div class="progress-wrap">
+        <div class="progress-track">
+          <div id="progress-bar" class="progress-fill"></div>
+        </div>
+        <span id="progress-label" class="progress-label">1 / 8</span>
+      </div>
+
+      <p id="question-text" class="question-text"></p>
+
+      <div id="options-container" class="options-container"></div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       PANTALLA 3 — RESULTADO
+  ════════════════════════════════════════════════════════════ -->
+  <div id="screen-result" class="screen">
+
+    <div id="result-panel">
+      <div id="result-header">
+        <span id="result-nivel-num">NIVEL 1</span>
+        <h2  id="result-titulo"></h2>
+        <p   id="result-subtitulo"></p>
+      </div>
+
+      <div id="result-frases"></div>
+
+      <div id="result-consejos-wrap">
+        <p class="consejos-label">Para sentirte mejor</p>
+        <ul id="result-consejos"></ul>
+      </div>
+
+      <button id="btn-restart" class="btn-secondary">Volver a comenzar</button>
+    </div>
+
+    <button id="audio-toggle" title="Activar/desactivar sonido">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="2">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+        <path id="audio-wave"
+              d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+      </svg>
+    </button>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tone@14.7.77/build/Tone.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/results-content.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/audioEngine.js"></script>
+  <script src="js/bgCanvas.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/scene3d.js"></script>
+  <script src="js/character.js"></script>
+  <script src="js/survey.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

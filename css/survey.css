@@ -1,0 +1,584 @@
+/* survey.css — Mobile-first: diseñado para teléfono, escalado a escritorio */
+
+/* ══════════════════════════════════════════════════════
+   SISTEMA DE PANTALLAS
+══════════════════════════════════════════════════════ */
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+  /* Padding seguro para notch y barra del navegador en iOS */
+  padding-top:    env(safe-area-inset-top,    0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ══════════════════════════════════════════════════════
+   PANTALLA 1 — BIENVENIDA
+══════════════════════════════════════════════════════ */
+#screen-welcome {
+  background: radial-gradient(
+    ellipse at 50% 35%,
+    rgba(28, 28, 48, 0.99) 0%,
+    rgba(8, 8, 14, 1) 68%
+  );
+}
+
+.welcome-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  /* Gap pequeño en móvil */
+  gap: 1.2rem;
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem 1.6rem;
+  /* Asegurar que entra en pantalla pequeña */
+  max-height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+  animation: fadeUp 0.7s ease both;
+}
+
+.welcome-inner::-webkit-scrollbar { display: none; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Logo */
+.welcome-logo {
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.welcome-logo img {
+  max-width: 150%;
+  max-height: 150%;
+  object-fit: contain;
+
+}
+
+.logo-fallback {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--color-accent);
+  text-align: center;
+  line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-fallback span {
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.4em;
+  opacity: 0.5;
+  margin-top: 0.2rem;
+}
+
+/* Título */
+.welcome-title {
+  font-family: 'Cormorant Garamond', serif;
+  /* clamp: mínimo 1.8rem en móvil, máximo 3rem en desktop */
+  font-size: clamp(1.8rem, 8vw, 3rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-text);
+  line-height: 1.1;
+  margin: 0;
+}
+
+/* Descripción */
+.welcome-desc {
+  /* Tamaño legible sin ser demasiado grande en móvil */
+  font-size: clamp(0.78rem, 3.5vw, 0.88rem);
+  line-height: 1.85;
+  color: var(--color-muted);
+  letter-spacing: 0.02em;
+  max-width: 320px;
+}
+
+/* Botón principal — área táctil mínima de 48px */
+.btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 1rem 2rem;
+  min-height: 48px;         /* área táctil mínima */
+  width: 100%;
+  max-width: 280px;
+  background: var(--color-accent);
+  color: #000;
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 0 28px color-mix(in srgb, var(--color-accent) 35%, transparent);
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.btn-primary svg { flex-shrink: 0; }
+
+/* Hint */
+.welcome-hint {
+  font-size: 0.5rem;
+  letter-spacing: 0.18em;
+  color: var(--color-muted);
+  opacity: 0.45;
+  text-transform: uppercase;
+  max-width: 280px;
+  line-height: 1.8;
+}
+
+/* Desktop: logo más grande, más espacio */
+@media (min-width: 480px) {
+  .welcome-logo { width: 130px; height: 130px; }
+  .welcome-inner { gap: 1.6rem; padding: 2.5rem 2rem; }
+}
+
+/* ══════════════════════════════════════════════════════
+   PANTALLA 2 — ENCUESTA
+══════════════════════════════════════════════════════ */
+#screen-survey {
+  background: radial-gradient(
+    ellipse at 50% 25%,
+    rgba(18, 18, 38, 0.98) 0%,
+    rgba(8, 8, 14, 1) 70%
+  );
+  /* Alinear al inicio para que la barra de progreso quede arriba */
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+}
+
+.survey-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.6rem;
+  width: 100%;
+  max-width: 520px;
+  padding: 0 1.4rem;
+  /* Permitir scroll si las opciones son largas */
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+.survey-inner::-webkit-scrollbar { display: none; }
+
+/* Barra de progreso */
+.progress-wrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding-top: 0.5rem;
+  flex-shrink: 0;
+}
+
+.progress-track {
+  flex: 1;
+  height: 2px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--color-accent);
+  border-radius: 1px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 6px var(--color-accent);
+}
+
+.progress-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  color: var(--color-muted);
+  white-space: nowrap;
+  min-width: 2.8rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Pregunta */
+.question-text {
+  font-family: 'Cormorant Garamond', serif;
+  /* En móvil más grande para que sea fácil de leer */
+  font-size: clamp(1.8rem, 5.5vw, 1.85rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--color-text);
+  text-align: center;
+  line-height: 1.45;
+  /* Altura mínima para evitar saltos de layout */
+  min-height: 3.5rem;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+/* Opciones */
+.options-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  width: 100%;
+  transition: opacity 0.2s ease;
+  /* Empuja hacia abajo si hay espacio */
+  flex: 1;
+  justify-content: flex-start;
+  padding-bottom: 1rem;
+}
+
+.option-btn {
+  width: 100%;
+  /* Mínimo 52px para área táctil cómoda en móvil */
+  min-height: 52px;
+  padding: 0.9rem 1.2rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.09);
+  color: rgba(255,255,255,0.78);
+  font-family: 'Space Mono', monospace;
+  /* En móvil texto más pequeño para que quepan las frases largas */
+  font-size: clamp(1rem, 3vw, 1rem);
+  line-height: 1.65;
+  letter-spacing: 0.02em;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.18s ease, border-color 0.18s ease,
+              transform 0.15s ease;
+  animation: slideIn 0.28s ease both;
+  /* Evitar selección de texto al pulsar rápido */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* En móvil no hay hover; el feedback es en :active */
+.option-btn:active {
+  background: rgba(255,255,255,0.08);
+  transform: scale(0.985);
+}
+
+/* Desktop: hover al pasar el mouse */
+@media (hover: hover) {
+  .option-btn:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: var(--color-accent);
+    color: #fff;
+    transform: translateX(3px);
+  }
+}
+
+.option-btn.selected {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ══════════════════════════════════════════════════════
+   PANTALLA 3 — RESULTADO (MÓVIL)
+   Diseño: personaje arriba, panel de texto abajo
+══════════════════════════════════════════════════════ */
+#screen-result {
+  background: transparent;
+  z-index: 5;
+  /* En móvil: panel en la parte inferior */
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+#screen-result.active {
+  pointer-events: all;
+}
+
+/* Panel inferior en móvil */
+#result-panel {
+  position: relative;
+  width: 100%;
+  /* Ocupa el 52% inferior de la pantalla → el personaje tiene el 48% superior */
+  max-height: 52vh;
+  padding: 1.4rem 1.4rem calc(env(safe-area-inset-bottom, 0px) + 1.2rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background: linear-gradient(
+    to top,
+    rgba(8, 8, 14, 0.97) 0%,
+    rgba(8, 8, 14, 0.90) 75%,
+    rgba(8, 8, 14, 0.0) 100%
+  );
+  border-radius: 20px 20px 0 0;
+  animation: panelUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+#result-panel::-webkit-scrollbar { display: none; }
+
+@keyframes panelUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Header */
+#result-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+#result-nivel-num {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.2rem;
+  color: var(--color-accent);
+  opacity: 0.75;
+}
+
+#result-titulo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.5rem, 8vw, 3rem);
+  font-weight: 600;
+  font-style: italic;
+  line-height: 1.05;
+  margin: 0;
+  color: var(--color-accent);
+  transition: color 0.9s ease;
+}
+
+#result-subtitulo {
+  font-size: clamp(1rem, 2.2vw, 0.62rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Frases */
+#result-frases {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border-left: 1px solid var(--color-accent);
+  padding-left: 0.9rem;
+  opacity: 0.85;
+}
+
+.result-frase {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(1.5rem, 3.5vw, 1.6rem);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--color-text);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Consejos */
+#result-consejos-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.consejos-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 1.2rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin: 0;
+  opacity: 0.65;
+}
+
+#result-consejos {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+#result-consejos li {
+  font-size: clamp(1.2rem, 2.5vw, 0.72rem);
+  line-height: 1.65;
+  color: rgba(255,255,255,0.62);
+  letter-spacing: 0.01em;
+  padding-left: 1rem;
+  position: relative;
+}
+
+#result-consejos li::before {
+  content: '→ ';
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  opacity: 0.55;
+}
+
+/* Botón reiniciar — área táctil generosa */
+.btn-secondary {
+  align-self: flex-start;
+  padding: 0.65rem 1.2rem;
+  min-height: 44px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.14);
+  color: var(--color-muted);
+  font-family: 'Space Mono', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.25s ease;
+  margin-top: 0.2rem;
+}
+
+.btn-secondary:active,
+.btn-secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ── Botón de audio ──────────────────────────────────── */
+#audio-toggle {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 0.9rem);
+  right: 1.2rem;
+  z-index: 30;
+  width: 2.8rem;
+  height: 2.8rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(0,0,0,0.5);
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+#audio-toggle:active,
+#audio-toggle:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+#audio-toggle.muted #audio-wave { opacity: 0.14; }
+
+/* ══════════════════════════════════════════════════════
+   TABLET Y DESKTOP (≥ 768px)
+   Panel lateral izquierdo en lugar de inferior
+══════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+  #screen-survey {
+    align-items: center;
+    padding-top: 0;
+  }
+
+  .survey-inner {
+    height: auto;
+    gap: 2rem;
+    padding: 0 2rem;
+  }
+
+  #screen-result {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
+  #result-panel {
+    width: min(320px, 40vw);
+    max-height: 100vh;
+    height: 100%;
+    border-radius: 0;
+    padding: 3rem 2rem 2rem;
+    gap: 1.4rem;
+    background: linear-gradient(
+      to right,
+      rgba(8, 8, 14, 0.93) 0%,
+      rgba(8, 8, 14, 0.78) 70%,
+      transparent 100%
+    );
+    animation: panelIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes panelIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  #result-titulo {
+    font-size: clamp(1.9rem, 3.5vw, 2.6rem);
+  }
+
+  .option-btn {
+    font-size: 0.75rem;
+    padding: 0.95rem 1.35rem;
+  }
+
+  .welcome-logo { width: 140px; height: 140px; }
+  .welcome-inner { gap: 1.6rem; max-width: 480px; }
+}
+
+/* ══════════════════════════════════════════════════════
+   PANTALLAS MUY PEQUEÑAS (≤ 360px, ej. iPhone SE)
+══════════════════════════════════════════════════════ */
+@media (max-width: 360px) {
+  .welcome-logo { width: 80px; height: 80px; }
+  .welcome-title { font-size: 1.6rem; }
+  .welcome-inner { gap: 1rem; padding: 1.5rem 1.2rem; }
+
+  .question-text { font-size: 1.2rem; min-height: 3rem; }
+  .option-btn    { font-size: 0.6rem; min-height: 48px; }
+  .survey-inner  { gap: 1.2rem; padding: 0 1rem; }
+
+  #result-panel  { max-height: 56vh; padding: 1.2rem 1.2rem 1.5rem; }
+  #result-titulo { font-size: 1.55rem; }
+}
